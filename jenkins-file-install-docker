@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Nettoyage Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        
+        stage('Checkout SCM') {
+            steps {
+                // N'oublie pas de remettre ton nom d'utilisateur GitHub
+                git branch: 'master', url: 'https://github.com/TON_COMPTE_GITHUB/githubeval.git'
+            }
+        }
+        
+        stage('Build DockerImage') {
+            steps {
+                // Étape 4 du schéma : Jenkins construit l'image Docker
+                // On l'appelle "app-devops"
+                sh 'docker build -t app-devops .'
+            }
+        }
+        
+        stage('Deploy application') {
+            steps {
+                // Étape 5 du schéma : On lance le conteneur sur le port 80
+                // Les commandes "|| true" permettent de ne pas bloquer le pipeline si le conteneur n'existe pas encore
+                sh 'docker stop site-web || true'
+                sh 'docker rm site-web || true'
+                sh 'docker run -d -p 80:80 --name site-web app-devops'
+            }
+        }
+    }
+}
