@@ -1,38 +1,44 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "my-nginx"
+        CONTAINER_NAME = "myapp"
+    }
+
     stages {
-        stage('1. Nettoyage et Checkout') {
+
+        stage('1. Nettoyage Workspace') {
             steps {
-                // On vide le dossier de travail pour repartir sur du propre
                 cleanWs()
-                // On récupère ton code depuis ton GitHub
+            }
+        }
+
+        stage('2. Checkout Code') {
+            steps {
                 git branch: 'main', url: 'https://github.com/ThomasDufour78/githubeval.git'
             }
         }
 
-        stage('2. Installation Docker') {
+        stage('3. Vérification Docker') {
             steps {
                 sh '''
-                    # Installation de docker.io si pas présent
-                    sudo apt update && sudo apt install -y docker.io
-                    sudo systemctl start docker
-                    # On donne les droits à Jenkins sur la socket Docker
-                    sudo chmod 666 /var/run/docker.sock
+                    docker --version
+                    docker info
                 '''
             }
         }
 
-        stage('3. Build Image Nginx') {
+        stage('4. Build Image Docker') {
             steps {
-                // Construction de l'image demandée : my-nginx
-                sh 'docker build -t my-nginx .'
+                sh '''
+                    docker build -t $IMAGE_NAME .
+                '''
             }
         }
 
-        stage('4. Nettoyage Ancien Conteneur') {
+        stage('5. Stop & Remove ancien container') {
             steps {
-                // On supprime "myapp" s'il tourne déjà pour éviter les conflits
                 sh '''
                     docker stop myapp || true
                     docker rm myapp || true
@@ -40,18 +46,17 @@ pipeline {
             }
         }
 
-        stage('5. Déploiement Final') {
+        stage('6. Déploiement') {
             steps {
                 sh '''
-                    # Lancement du conteneur sur le port 80 avec le nom 'myapp'
-                    docker run -d --name myapp -p 80:80 my-nginx
-                    
-                    # On laisse 2 secondes au service pour démarrer
+                    docker run -d \
+                        --name myapp \
+                        -p 80:80 \
+                        $IMAGE_NAME
+
                     sleep 2
-                    
-                    # Copie du dossier 'monsite' vers le dossier racine de Nginx dans le conteneur
-                    # Note : 'monsite/.' permet de copier le CONTENU du dossier
-                    docker cp monsite/. myapp:/var/www/html/
+
+                    docker cp monsite/. myapp:/usr/share/nginx/html/
                 '''
             }
         }
@@ -59,7 +64,15 @@ pipeline {
 
     post {
         success {
-            echo "Déploiement terminé ! Testez l'URL : http://www.promdevops65.loc"
+            echo "Déploiement réussi"
+        }
+
+        failure {
+            echo "Échec du pipeline"
+        }
+
+        always {
+            echo "Fin du pipeline"
         }
     }
 }
