@@ -43,7 +43,7 @@ CMD ["nginx", "-g", "daemon off;"]
             steps {
                 sh 'docker stop mon-conteneur || true'
                 sh 'docker rm mon-conteneur || true'
-                sh 'docker run -d -p 80:80 --name mon-conteneur mon-image-ubuntu'
+                sh 'docker run -d -p 8081:80 --name mon-conteneur mon-image-ubuntu'
             }
         }
     }
