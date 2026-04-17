@@ -14,37 +14,14 @@ pipeline {
             }
         }
 
-        stage('Création du Dockerfile') {
-            steps {
-                writeFile file: 'Dockerfile', text: '''
-FROM ubuntu:latest
-
-RUN apt-get update && apt-get install -y \
-    nginx \
-    net-tools \
-    iproute2 \
-    python3 \
-    iputils-ping
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
-'''
-            }
-        }
         
         stage('Build DockerImage') {
             steps {
-                sh 'docker build -t mon-image-ubuntu .'
+                sh 'docker build -t my-nginx .'
             }
         }
         
-        stage('Deploy application') {
-            steps {
-                sh 'docker stop mon-conteneur || true'
-                sh 'docker rm mon-conteneur || true'
-                sh 'docker run -d -p 8081:80 --name mon-conteneur mon-image-ubuntu'
-            }
+        
         }
     }
 }
