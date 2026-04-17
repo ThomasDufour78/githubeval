@@ -7,21 +7,17 @@ pipeline {
                 cleanWs()
             }
         }
-        
+
         stage('Checkout SCM') {
             steps {
                 git branch: 'main', url: 'https://github.com/ThomasDufour78/githubeval.git'
             }
         }
 
-        
         stage('Build DockerImage') {
             steps {
                 sh 'docker build -t my-nginx .'
             }
-        }
-        
-        
         }
     }
 }
