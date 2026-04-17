@@ -17,7 +17,7 @@ pipeline {
         
         stage('Build DockerImage') {
             steps {
-                // Étape 4 du schéma : Jenkins construit l'image Docker
+               
                
                 sh 'docker build -t app-devops .'
             }
