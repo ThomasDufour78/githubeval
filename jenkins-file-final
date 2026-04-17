@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('1. Nettoyage et Checkout') {
+            steps {
+                // On vide le dossier de travail pour repartir sur du propre
+                cleanWs()
+                // On récupère ton code depuis ton GitHub
+                git branch: 'main', url: 'https://github.com/ThomasDufour78/githubeval.git'
+            }
+        }
+
+        stage('2. Installation Docker') {
+            steps {
+                sh '''
+                    # Installation de docker.io si pas présent
+                    sudo apt update && sudo apt install -y docker.io
+                    sudo systemctl start docker
+                    # On donne les droits à Jenkins sur la socket Docker
+                    sudo chmod 666 /var/run/docker.sock
+                '''
+            }
+        }
+
+        stage('3. Build Image Nginx') {
+            steps {
+                // Construction de l'image demandée : my-nginx
+                sh 'docker build -t my-nginx .'
+            }
+        }
+
+        stage('4. Nettoyage Ancien Conteneur') {
+            steps {
+                // On supprime "myapp" s'il tourne déjà pour éviter les conflits
+                sh '''
+                    docker stop myapp || true
+                    docker rm myapp || true
+                '''
+            }
+        }
+
+        stage('5. Déploiement Final') {
+            steps {
+                sh '''
+                    # Lancement du conteneur sur le port 80 avec le nom 'myapp'
+                    docker run -d --name myapp -p 80:80 my-nginx
+                    
+                    # On laisse 2 secondes au service pour démarrer
+                    sleep 2
+                    
+                    # Copie du dossier 'monsite' vers le dossier racine de Nginx dans le conteneur
+                    # Note : 'monsite/.' permet de copier le CONTENU du dossier
+                    docker cp monsite/. myapp:/var/www/html/
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Déploiement terminé ! Testez l'URL : http://www.promdevops65.loc"
+        }
+    }
+}
