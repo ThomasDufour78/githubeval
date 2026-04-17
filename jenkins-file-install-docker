@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout SCM') {
             steps {
                 
-                git branch: 'master', url: 'https://github.com/ThomasDufour78/githubeval.git'
+                git branch: 'main', url: 'https://github.com/ThomasDufour78/githubeval.git'
             }
         }
         
