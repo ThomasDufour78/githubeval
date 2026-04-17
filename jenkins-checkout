@@ -4,16 +4,16 @@ pipeline {
     stages {
         stage('Nettoyage du Workspace') {
             steps {
-                // Cette commande vide le dossier de travail pour éviter les conflits
+                
                 cleanWs()
             }
         }
         
         stage('Checkout SCM') {
             steps {
-                // Cette commande clone ton dépôt GitHub
-                // N'oublie pas de remplacer "TON_COMPTE_GITHUB" par ton vrai nom d'utilisateur
-                git branch: 'main', url: 'https://github.com/TON_COMPTE_GITHUB/githubeval.git'
+                
+               
+                git branch: 'main', url: 'https://github.com/ThomasDufour78/githubeval.git'
             }
         }
     }
